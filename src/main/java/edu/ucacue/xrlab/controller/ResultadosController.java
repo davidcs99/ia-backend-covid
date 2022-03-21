@@ -66,7 +66,7 @@ public class ResultadosController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	
 	}
-	//@Secured({ "ROLE_ADMIN", "ROLE_USER" })
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 		@PostMapping("/upload")
 		public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo ){
 			Map<String, Object> response = new HashMap<>();
@@ -85,13 +85,7 @@ public class ResultadosController {
 					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
-				// String nombreFotoAnterior = tipoNegocio.getFoto();
-
-				// uploadService.eliminar(nombreFotoAnterior);
-
-				
-
-			
+						
 				
 				response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
 
