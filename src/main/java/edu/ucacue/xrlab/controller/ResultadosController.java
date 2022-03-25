@@ -95,7 +95,7 @@ public class ResultadosController {
 			//File filee = new File("C:\\Users\\David\\eclipse-workspace\\ai-back-covid\\src\\main\\resources\\input.txt");
 			//File filee = new File(archivo.getOriginalFilename());
 			File temp = File.createTempFile
-				      (archivo.getName(),".jpeg");
+				      (archivo.getName(),".jpg");
 				      temp.deleteOnExit();
 			archivo.transferTo(temp);
 			
@@ -113,7 +113,7 @@ public class ResultadosController {
 
 			if (!archivo.isEmpty()) {
 
-				String nombreArchivo = null;
+				//String nombreArchivo = null;
 
 				// HttpEntity<MultipartFile> httpEntity = new HttpEntity<>(archivo, headers);
 
@@ -122,7 +122,7 @@ public class ResultadosController {
 
 				restTemplate.postForEntity(uri, requestEntity, String.class);
 //				//restTemplate.postForObject(uri, requestEntity, String.class);
-				response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
+				response.put("mensaje", "Has subido correctamente la imagen: ");
 
 			}
 
