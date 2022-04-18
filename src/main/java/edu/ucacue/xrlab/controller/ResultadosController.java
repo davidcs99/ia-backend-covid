@@ -79,53 +79,59 @@ public class ResultadosController {
 
 	}
 
-	// @Secured({ "ROLE_ADMIN", "ROLE_USER" })
-	@PostMapping("/upload")
-	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo)  {
-		Map<String, Object> response = new HashMap<>();
 
-		try {
-
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-			
-			//Convertir multipart file a file
-			File convFile = new File(archivo.getOriginalFilename());
-			convFile.createNewFile();
-			FileOutputStream fos = new FileOutputStream(convFile);
-			fos.write(archivo.getBytes());
-			fos.close();
-			////////////////////////////////////////
-
-			String uri = "http://172.16.110.135:5000/file-upload";
-			
-			LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-			body.add("file", convFile);
-			HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<LinkedMultiValueMap<String,Object>>(body, headers);
-			
-			RestTemplate restTemplate = new RestTemplate();
-			
-			if (!archivo.isEmpty()) {
-				
-
-				restTemplate.postForEntity(uri, requestEntity, String.class);
-				
-				response.put("mensaje", "Has subido correctamente la imagen: ");
-
-			}
-
-		} catch (ImagingOpException e) {
-			response.put("mensaje", "Error al subir la imagen del producto");
-			response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (IOException io) {
-			System.out.println(io.toString());
-		}
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
-	}
 	
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
+	@PostMapping("/upload")
+	public String upload2(@RequestParam("archivo") MultipartFile archivo)  {
+		ResponseEntity<String> response;
+		String respuesta="";
 
+		   try {
+	            RestTemplate restTemplate = new RestTemplate();
+	            String url = "http://172.16.110.135:5000/file-upload";
+	            HttpMethod requestMethod = HttpMethod.POST;
+
+	            HttpHeaders headers = new HttpHeaders();
+	            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+	            
+				//Convertir multipart file a file
+				File convFile = new File(archivo.getOriginalFilename());
+				convFile.createNewFile();
+				FileOutputStream fos = new FileOutputStream(convFile);
+				fos.write(archivo.getBytes());
+				fos.close();
+				////////////////////////////////////////
+
+
+	            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+	            ContentDisposition contentDisposition = ContentDisposition
+	                    .builder("form-data")
+	                    .name("file")
+	                    .filename(convFile.getName())
+	                    .build();
+
+	            fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+	            HttpEntity<byte[]> fileEntity = new HttpEntity<>(Files.readAllBytes(convFile.toPath()), fileMap);
+
+	            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+	            body.add("file", fileEntity);
+
+	            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+	            response = restTemplate.exchange(url, requestMethod, requestEntity, String.class);
+	            
+	            
+	            respuesta=response.toString();
+	            System.out.println("file upload status code: " + response.getStatusCode());
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+			return respuesta;
+
+	}
 
 }
 
