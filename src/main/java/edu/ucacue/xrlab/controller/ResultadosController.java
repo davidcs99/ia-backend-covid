@@ -4,7 +4,8 @@ import java.awt.image.ImagingOpException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -78,50 +81,35 @@ public class ResultadosController {
 
 	// @Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/upload")
-	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo) {
+	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo)  {
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			File targetFile = new File(archivo.getOriginalFilename());
-
-			FileOutputStream fos = new FileOutputStream(targetFile);
-			fos.write(archivo.getBytes());
 
 			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 			
+			//Convertir multipart file a file
+			File convFile = new File(archivo.getOriginalFilename());
+			convFile.createNewFile();
+			FileOutputStream fos = new FileOutputStream(convFile);
+			fos.write(archivo.getBytes());
+			fos.close();
+			////////////////////////////////////////
 
-			//File filee = new File("C:\\Users\\David\\eclipse-workspace\\ai-back-covid\\src\\main\\resources\\input.txt");
-			//File filee = new File(archivo.getOriginalFilename());
-			File temp = File.createTempFile
-				      (archivo.getName(),".jpg");
-				      temp.deleteOnExit();
-			archivo.transferTo(temp);
+			String uri = "http://172.16.110.135:5000/file-upload";
 			
-			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-			body.add("file", temp);
-			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-			// String archivo = null;
-			String uri = "http://172.16.110.134:5000/file-upload";
+			LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+			body.add("file", convFile);
+			HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<LinkedMultiValueMap<String,Object>>(body, headers);
+			
 			RestTemplate restTemplate = new RestTemplate();
-			// headers.setContentType(MediaType.APPLICATION_JSON);
-			// HttpEntity<MultipartFile> httpEntity = new HttpEntity<>(archivo, headers);
-
-			// HttpEntity<MultipartFile> entity = new HttpEntity<>(archivo, headers);
-
+			
 			if (!archivo.isEmpty()) {
-
-				//String nombreArchivo = null;
-
-				// HttpEntity<MultipartFile> httpEntity = new HttpEntity<>(archivo, headers);
-
-				// body.add("file", archivo);
-				// nombreArchivo = uploadService.copiar(archivo);
+				
 
 				restTemplate.postForEntity(uri, requestEntity, String.class);
-//				//restTemplate.postForObject(uri, requestEntity, String.class);
+				
 				response.put("mensaje", "Has subido correctamente la imagen: ");
 
 			}
@@ -136,5 +124,8 @@ public class ResultadosController {
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
+	
+
 
 }
+
