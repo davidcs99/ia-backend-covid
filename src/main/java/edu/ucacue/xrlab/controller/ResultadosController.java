@@ -83,7 +83,7 @@ public class ResultadosController {
 	
 	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/upload")
-	public String upload2(@RequestParam("archivo") MultipartFile archivo)  {
+	public String upload(@RequestParam("archivo") MultipartFile archivo)  {
 		ResponseEntity<String> response;
 		String respuesta="";
 
