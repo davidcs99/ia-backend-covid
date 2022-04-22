@@ -1,15 +1,3 @@
-package edu.ucacue.xrlab.controller;
-
-import java.awt.image.ImagingOpException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -83,10 +71,10 @@ public class ResultadosController {
 	
 	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/upload")
-	public String upload(@RequestParam("archivo") MultipartFile archivo)  {
+	public String upload(@RequestParam("archivo") MultipartFile archivo) throws Exception  {
 		ResponseEntity<String> response;
 		String respuesta="";
-
+		String respuesta1="Imagen devuelta";
 		   try {
 	            RestTemplate restTemplate = new RestTemplate();
 	            String url = "http://172.16.110.135:5000/file-upload";
@@ -102,8 +90,10 @@ public class ResultadosController {
 				fos.write(archivo.getBytes());
 				fos.close();
 				////////////////////////////////////////
-
-
+		    String encodstring = encodeFileToBase64Binary(convFile);
+	             System.out.println(encodstring);
+				
+				/*
 	            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
 	            ContentDisposition contentDisposition = ContentDisposition
 	                    .builder("form-data")
@@ -123,15 +113,25 @@ public class ResultadosController {
 	            
 	            
 	            respuesta=response.toString();
-	            System.out.println("file upload status code: " + response.getStatusCode());
+	            respuesta=convFile.toString();
+	            System.out.print(respuesta);
+	            */
+	             respuesta=encodstring.toString();
+	           // System.out.println("file upload status code: " + response.getStatusCode());
 
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
 
 			return respuesta;
-
+			
+			
 	}
-
+	
+	private static String encodeFileToBase64Binary(File file) throws Exception{
+        FileInputStream fileInputStreamReader = new FileInputStream(file);
+        byte[] bytes = new byte[(int)file.length()];
+        fileInputStreamReader.read(bytes);
+        return new String(Base64.getEncoder().encodeToString(bytes));
+    }
 }
-
