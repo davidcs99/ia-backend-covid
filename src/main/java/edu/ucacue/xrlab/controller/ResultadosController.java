@@ -71,67 +71,52 @@ public class ResultadosController {
 	
 	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/upload")
-	public String upload(@RequestParam("archivo") MultipartFile archivo) throws Exception  {
+	public String upload(@RequestParam("archivo") MultipartFile archivo) throws Exception {
 		ResponseEntity<String> response;
-		String respuesta="";
-		String respuesta1="Imagen devuelta";
-		   try {
-	            RestTemplate restTemplate = new RestTemplate();
-	            String url = "http://172.16.110.135:5000/file-upload";
-	            HttpMethod requestMethod = HttpMethod.POST;
+		//ResponseEntity<String> response1;
+		String respuesta = "";
+		
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			String url = "http://172.16.110.135:5000/file-upload";
+			HttpMethod requestMethod = HttpMethod.POST;
+			HttpMethod requestMethod1 = HttpMethod.GET;
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-	            HttpHeaders headers = new HttpHeaders();
-	            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-	            
-				//Convertir multipart file a file
-				File convFile = new File(archivo.getOriginalFilename());
-				convFile.createNewFile();
-				FileOutputStream fos = new FileOutputStream(convFile);
-				fos.write(archivo.getBytes());
-				fos.close();
-				////////////////////////////////////////
-		    String encodstring = encodeFileToBase64Binary(convFile);
-	             System.out.println(encodstring);
+			// Convertir multipart file a file
+			File convFile = new File(archivo.getOriginalFilename());
+			convFile.createNewFile();
+			FileOutputStream fos = new FileOutputStream(convFile);
+			fos.write(archivo.getBytes());
+			fos.close();
+			////////////////////////////////////////
 				
-				/*
-	            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
-	            ContentDisposition contentDisposition = ContentDisposition
-	                    .builder("form-data")
-	                    .name("file")
-	                    .filename(convFile.getName())
-	                    .build();
+            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+            ContentDisposition contentDisposition = ContentDisposition
+                    .builder("form-data")
+                    .name("file")
+                    .filename(convFile.getName())
+                    .build();
 
-	            fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
-	            HttpEntity<byte[]> fileEntity = new HttpEntity<>(Files.readAllBytes(convFile.toPath()), fileMap);
+            fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+            HttpEntity<byte[]> fileEntity = new HttpEntity<>(Files.readAllBytes(convFile.toPath()), fileMap);
 
-	            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-	            body.add("file", fileEntity);
-
-	            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-	            response = restTemplate.exchange(url, requestMethod, requestEntity, String.class);
-	            
-	            
-	            respuesta=response.toString();
-	            respuesta=convFile.toString();
-	            System.out.print(respuesta);
-	            */
-	             respuesta=encodstring.toString();
-	           // System.out.println("file upload status code: " + response.getStatusCode());
-
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-
-			return respuesta;
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", fileEntity);
+			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 			
 			
+			response = restTemplate.exchange(url, requestMethod, requestEntity, String.class);
+			respuesta=response.toString(); 
+			
+			System.out.print(respuesta);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return respuesta;
+
 	}
-	
-	private static String encodeFileToBase64Binary(File file) throws Exception{
-        FileInputStream fileInputStreamReader = new FileInputStream(file);
-        byte[] bytes = new byte[(int)file.length()];
-        fileInputStreamReader.read(bytes);
-        return new String(Base64.getEncoder().encodeToString(bytes));
-    }
 }
