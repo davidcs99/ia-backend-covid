@@ -68,55 +68,57 @@ public class ResultadosController {
 	}
 
 
-	
-	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
-	@PostMapping("/upload")
-	public String upload(@RequestParam("archivo") MultipartFile archivo) throws Exception {
-		ResponseEntity<String> response;
-		//ResponseEntity<String> response1;
-		String respuesta = "";
+@PostMapping("/upload")
+	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo) throws Exception  {
+		String respuesta="";
 		
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			String url = "http://172.16.110.135:5000/file-upload";
-			HttpMethod requestMethod = HttpMethod.POST;
-			HttpMethod requestMethod1 = HttpMethod.GET;
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		
+		ResponseEntity<String> response;
+		Map<String, Object> response1 = new HashMap<String, Object>();
 
-			// Convertir multipart file a file
-			File convFile = new File(archivo.getOriginalFilename());
-			convFile.createNewFile();
-			FileOutputStream fos = new FileOutputStream(convFile);
-			fos.write(archivo.getBytes());
-			fos.close();
-			////////////////////////////////////////
+		   try {
+			   RestTemplate restTemplate = new RestTemplate();
+				String url = "http://172.16.110.136:5000/file-upload";
+				HttpMethod requestMethod = HttpMethod.POST;
+				HttpMethod requestMethod1 = HttpMethod.GET;
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+				// Convertir multipart file a file
+				File convFile = new File(archivo.getOriginalFilename());
+				convFile.createNewFile();
+				FileOutputStream fos = new FileOutputStream(convFile);
+				fos.write(archivo.getBytes());
+				fos.close();
+				////////////////////////////////////////
+					
+	            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+	            ContentDisposition contentDisposition = ContentDisposition
+	                    .builder("form-data")
+	                    .name("file")
+	                    .filename(convFile.getName())
+	                    .build();
+
+	            fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+	            HttpEntity<byte[]> fileEntity = new HttpEntity<>(Files.readAllBytes(convFile.toPath()), fileMap);
+
+	            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+	            body.add("file", fileEntity);
+				HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+								
+				response = restTemplate.exchange(url, requestMethod, requestEntity, String.class);
+				respuesta=response.toString(); 
 				
-            MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
-            ContentDisposition contentDisposition = ContentDisposition
-                    .builder("form-data")
-                    .name("file")
-                    .filename(convFile.getName())
-                    .build();
+				System.out.print(respuesta);
 
-            fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
-            HttpEntity<byte[]> fileEntity = new HttpEntity<>(Files.readAllBytes(convFile.toPath()), fileMap);
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", fileEntity);
-			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+		   
+		   response1.put("mensaje",
+					"El ingreso de los resultados obtenidos por el IA se ha realizado con exito creado con éxito!");
+		   response1.put("prediccion", respuesta);
+			return new ResponseEntity<Map<String, Object>>(response1, HttpStatus.ACCEPTED);			
 			
-			
-			response = restTemplate.exchange(url, requestMethod, requestEntity, String.class);
-			respuesta=response.toString(); 
-			
-			System.out.print(respuesta);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return respuesta;
-
 	}
 }
