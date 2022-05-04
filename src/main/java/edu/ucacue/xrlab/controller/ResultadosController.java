@@ -67,8 +67,7 @@ public class ResultadosController {
 
 	}
 
-
-@PostMapping("/upload")
+	@PostMapping("/upload")
 	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo) throws Exception  {
 		String respuesta="";
 		
@@ -117,7 +116,7 @@ public class ResultadosController {
 		   
 		   response1.put("mensaje",
 					"El ingreso de los resultados obtenidos por el IA se ha realizado con exito creado con éxito!");
-		   response1.put("prediccion", respuesta);
+		   response1.put("prediccion", respuesta.substring(40, respuesta.length()-140));
 			return new ResponseEntity<Map<String, Object>>(response1, HttpStatus.ACCEPTED);			
 			
 	}
